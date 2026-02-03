@@ -17,6 +17,7 @@ import {
   VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF,
   XIAOMI_DEFAULT_MODEL_REF,
   ZAI_DEFAULT_MODEL_REF,
+  ZENMUX_DEFAULT_MODEL_REF,
 } from "./onboard-auth.credentials.js";
 import {
   buildMoonshotModelDefinition,
@@ -130,6 +131,47 @@ export function applyOpenrouterConfig(cfg: OpenClawConfig): OpenClawConfig {
               }
             : undefined),
           primary: OPENROUTER_DEFAULT_MODEL_REF,
+        },
+      },
+    },
+  };
+}
+
+export function applyZenmuxProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
+  const models = { ...cfg.agents?.defaults?.models };
+  models[ZENMUX_DEFAULT_MODEL_REF] = {
+    ...models[ZENMUX_DEFAULT_MODEL_REF],
+    alias: models[ZENMUX_DEFAULT_MODEL_REF]?.alias ?? "ZenMux",
+  };
+
+  return {
+    ...cfg,
+    agents: {
+      ...cfg.agents,
+      defaults: {
+        ...cfg.agents?.defaults,
+        models,
+      },
+    },
+  };
+}
+
+export function applyZenmuxConfig(cfg: OpenClawConfig): OpenClawConfig {
+  const next = applyZenmuxProviderConfig(cfg);
+  const existingModel = next.agents?.defaults?.model;
+  return {
+    ...next,
+    agents: {
+      ...next.agents,
+      defaults: {
+        ...next.agents?.defaults,
+        model: {
+          ...(existingModel && "fallbacks" in (existingModel as Record<string, unknown>)
+            ? {
+                fallbacks: (existingModel as { fallbacks?: string[] }).fallbacks,
+              }
+            : undefined),
+          primary: ZENMUX_DEFAULT_MODEL_REF,
         },
       },
     },
